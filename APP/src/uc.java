@@ -1,9 +1,11 @@
 public class uc {
 
-    // Enum for units with conversion to base unit (feet)
+    // Enum with conversion to base unit (FEET)
     enum LengthUnit {
         FEET(1.0),
-        INCH(1.0 / 12.0);
+        INCH(1.0 / 12.0),        // 1 inch = 1/12 feet
+        YARD(3.0),               // 1 yard = 3 feet
+        CENTIMETER(0.393701 / 12.0); // 1 cm = 0.393701 inch → convert to feet
 
         private final double toFeet;
 
@@ -29,12 +31,11 @@ public class uc {
             this.unit = unit;
         }
 
-        // Convert to base unit (feet)
+        // Convert everything to FEET
         private double toBase() {
             return unit.toFeet(value);
         }
 
-        // Equality check with conversion
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
@@ -50,15 +51,27 @@ public class uc {
         }
     }
 
-    // Main method for demo
+    // Main method (demo)
     public static void main(String[] args) {
 
-        Quantity q1 = new Quantity(1.0, LengthUnit.FEET);
-        Quantity q2 = new Quantity(12.0, LengthUnit.INCH);
-        Quantity q3 = new Quantity(1.0, LengthUnit.INCH);
+        System.out.println("1 yard == 3 feet: " +
+                new Quantity(1.0, LengthUnit.YARD)
+                        .equals(new Quantity(3.0, LengthUnit.FEET)));
 
-        System.out.println("1 ft == 12 inch: " + q1.equals(q2)); // true
-        System.out.println("1 inch == 1 inch: " + q3.equals(new Quantity(1.0, LengthUnit.INCH))); // true
-        System.out.println("1 ft == 2 ft: " + q1.equals(new Quantity(2.0, LengthUnit.FEET))); // false
+        System.out.println("1 yard == 36 inch: " +
+                new Quantity(1.0, LengthUnit.YARD)
+                        .equals(new Quantity(36.0, LengthUnit.INCH)));
+
+        System.out.println("2 yard == 2 yard: " +
+                new Quantity(2.0, LengthUnit.YARD)
+                        .equals(new Quantity(2.0, LengthUnit.YARD)));
+
+        System.out.println("1 cm == 0.393701 inch: " +
+                new Quantity(1.0, LengthUnit.CENTIMETER)
+                        .equals(new Quantity(0.393701, LengthUnit.INCH)));
+
+        System.out.println("1 cm == 1 foot: " +
+                new Quantity(1.0, LengthUnit.CENTIMETER)
+                        .equals(new Quantity(1.0, LengthUnit.FEET)));
     }
 }
