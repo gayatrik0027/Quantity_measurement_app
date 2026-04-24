@@ -38,24 +38,41 @@ public class uc {
             return unit.toFeet(value);
         }
 
-        // ✅ UC6: Add method (instance)
-        public Quantity add(Quantity other) {
-            if (other == null) throw new IllegalArgumentException("Other quantity cannot be null");
-
-            double sumInFeet = this.toBase() + other.toBase();
-            double result = this.unit.fromFeet(sumInFeet);
-
-            return new Quantity(result, this.unit); // result in unit of first operand
+        // 🔒 Private helper (DRY)
+        private static double addInBase(Quantity q1, Quantity q2) {
+            return q1.toBase() + q2.toBase();
         }
 
-        // ✅ Static version (optional)
+        // ✅ UC6 method (kept for backward compatibility)
+        public Quantity add(Quantity other) {
+            if (other == null) throw new IllegalArgumentException("Other cannot be null");
+
+            double sum = addInBase(this, other);
+            double result = this.unit.fromFeet(sum);
+
+            return new Quantity(result, this.unit);
+        }
+
+        // ✅ UC7 method (explicit target unit)
+        public Quantity add(Quantity other, LengthUnit targetUnit) {
+            if (other == null || targetUnit == null) {
+                throw new IllegalArgumentException("Invalid input");
+            }
+
+            double sum = addInBase(this, other);
+            double result = targetUnit.fromFeet(sum);
+
+            return new Quantity(result, targetUnit);
+        }
+
+        // ✅ Static version
         public static Quantity add(Quantity q1, Quantity q2, LengthUnit targetUnit) {
             if (q1 == null || q2 == null || targetUnit == null) {
                 throw new IllegalArgumentException("Invalid input");
             }
 
-            double sumInFeet = q1.toBase() + q2.toBase();
-            double result = targetUnit.fromFeet(sumInFeet);
+            double sum = addInBase(q1, q2);
+            double result = targetUnit.fromFeet(sum);
 
             return new Quantity(result, targetUnit);
         }
@@ -83,28 +100,25 @@ public class uc {
     // Demo
     public static void main(String[] args) {
 
-        Quantity q1 = new Quantity(1.0, LengthUnit.FEET);
-        Quantity q2 = new Quantity(12.0, LengthUnit.INCH);
+        Quantity f = new Quantity(1.0, LengthUnit.FEET);
+        Quantity i = new Quantity(12.0, LengthUnit.INCH);
 
-        // Instance addition
-        System.out.println("1 ft + 12 inch = " + q1.add(q2)); // 2 feet
+        // Explicit target units
+        System.out.println("Feet result: " + f.add(i, LengthUnit.FEET));   // 2 ft
+        System.out.println("Inch result: " + f.add(i, LengthUnit.INCH));   // 24 inch
+        System.out.println("Yard result: " + f.add(i, LengthUnit.YARD));   // ~0.667 yard
 
-        // Reverse (unit changes)
-        System.out.println("12 inch + 1 ft = " +
-                new Quantity(12.0, LengthUnit.INCH).add(q1)); // 24 inches
-
-        // Yard example
-        System.out.println("1 yard + 3 ft = " +
+        // Other combinations
+        System.out.println("Yard + Feet → Yard: " +
                 new Quantity(1.0, LengthUnit.YARD)
-                        .add(new Quantity(3.0, LengthUnit.FEET)));
+                        .add(new Quantity(3.0, LengthUnit.FEET), LengthUnit.YARD));
 
-        // Centimeter example
-        System.out.println("2.54 cm + 1 inch = " +
+        System.out.println("Inch + Yard → Feet: " +
+                new Quantity(36.0, LengthUnit.INCH)
+                        .add(new Quantity(1.0, LengthUnit.YARD), LengthUnit.FEET));
+
+        System.out.println("CM + Inch → CM: " +
                 new Quantity(2.54, LengthUnit.CENTIMETER)
-                        .add(new Quantity(1.0, LengthUnit.INCH)));
-
-        // Static method with target unit
-        System.out.println("Static add (in FEET): " +
-                Quantity.add(q1, q2, LengthUnit.FEET));
+                        .add(new Quantity(1.0, LengthUnit.INCH), LengthUnit.CENTIMETER));
     }
 }
